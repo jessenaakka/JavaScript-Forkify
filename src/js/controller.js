@@ -2,18 +2,14 @@
 import * as model from './model.js';
 import recipeView from './views/recipeView.js';
 
-//Polyfill es6 methods and fucntions except async
+//Polyfill everything else except async
 import 'core-js/stable';
 //Polyfill async functions
 import 'regenerator-runtime/runtime';
-
-const recipeContainer = document.querySelector('.recipe');
-
-// https://forkify-api.herokuapp.com/v2
+import { recip } from 'prelude-ls';
 
 ///////////////////////////////////////
 
-// Function for findng one recipe data test-url:https://forkify-api.herokuapp.com/api/get?rId=47746
 const controlRecipes = async function(){
     try{
         //Find the recipe id from url hash
@@ -31,9 +27,11 @@ const controlRecipes = async function(){
         //Rendering recipe
         recipeView.render(model.state.recipe);
     } catch(err){
-        alert(err);
+        recipeView.renderError();
     }
 };
 
-//Events for recipe show
-['hashchange', 'load'].forEach(ev => window.addEventListener(ev, controlRecipes))
+const init = function() {
+    recipeView.addHandlerRender(controlRecipes);
+}
+init();
