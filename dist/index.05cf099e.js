@@ -520,8 +520,10 @@ function hmrAcceptRun(bundle, id) {
 
 },{}],"lA0Es":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-var _iconsSvg = require("url:../img/icons.svg");
-var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
+//Module imports
+var _modelJs = require("./model.js");
+var _recipeViewJs = require("./views/recipeView.js");
+var _recipeViewJsDefault = parcelHelpers.interopDefault(_recipeViewJs);
 //Polyfill es6 methods and fucntions except async
 var _stable = require("core-js/stable");
 //Polyfill async functions
@@ -536,104 +538,31 @@ const timeout = function(s) {
 };
 // https://forkify-api.herokuapp.com/v2
 ///////////////////////////////////////
-const renderSpinner = function(parentEl) {
-    const markup = `
-    <div class="spinner">
-        <svg>
-        <use href="${_iconsSvgDefault.default}#icon-loader"></use>
-        </svg>
-    </div>
-    `;
-    parentEl.innerHTML = '';
-    parentEl.insertAdjacentHTML('afterbegin', markup);
-};
 // Function for findng one recipe data test-url:https://forkify-api.herokuapp.com/api/get?rId=47746
-const showRecipe = async function(url) {
+const controlRecipes = async function() {
     try {
-        //render spinner load
-        renderSpinner(recipeContainer);
-        //Loading recipe
-        const res = await fetch(url);
-        const data = await res.json();
-        if (!res.ok) throw new Error(`${data.error}`);
-        console.log(res, data);
-        let { recipe  } = data;
-        recipe = {
-            id: recipe.recipe_id,
-            title: recipe.title,
-            publisher: recipe.publisher,
-            sourceUrl: recipe.source_url,
-            image: recipe.image_url,
-            socialRank: recipe.social_rank,
-            publisherUrl: recipe.publisher_url,
-            ingredients: recipe.ingredients
-        };
-        console.log(recipe);
+        //Find the recipe id from url hash
+        const id = window.location.hash.slice(1);
+        //If hash is empty return
+        if (!id) return;
+        //Render spinner when fetching load
+        _recipeViewJsDefault.default.renderSpinner();
+        //Load recipe. This is a async function that return promise so use await
+        await _modelJs.loadRecipe(id);
         //Rendering recipe
-        const markup = `
-        <figure class="recipe__fig">
-          <img src="${recipe.image}" alt="${recipe.title}" class="recipe__img" />
-          <h1 class="recipe__title">
-            <span>${recipe.title}</span>
-          </h1>
-        </figure>
-
-        <div class="recipe__details">
-          <div class="recipe__user-generated">
-            <svg>
-              <use href="${_iconsSvgDefault.default}#icon-user"></use>
-            </svg>
-          </div>
-          <button class="btn--round">
-            <svg class="">
-              <use href="${_iconsSvgDefault.default}#icon-bookmark-fill"></use>
-            </svg>
-          </button>
-        </div>
-
-        <div class="recipe__ingredients">
-          <h2 class="heading--2">Recipe ingredients</h2>
-          <ul class="recipe__ingredient-list">
-            ${recipe.ingredients.map((ing)=>{
-            return `
-                <li class="recipe__ingredient">
-                    <div class="recipe__description">
-                        ${ing}
-                    </div>
-                </li> 
-                `;
-        }).join('')}
-          </ul>
-        </div>
-
-        <div class="recipe__directions">
-          <h2 class="heading--2">How to cook it</h2>
-          <p class="recipe__directions-text">
-            This recipe was carefully designed and tested by
-            <span class="recipe__publisher">${recipe.publisher}</span>. Please check out
-            directions at their website.
-          </p>
-          <a
-            class="btn--small recipe__btn"
-            href="${recipe.publisherUrl}"
-            target="_blank"
-          >
-            <span>Directions</span>
-            <svg class="search__icon">
-              <use href="${_iconsSvgDefault.default}#icon-arrow-right"></use>
-            </svg>
-          </a>
-        </div>
-        `;
-        recipeContainer.innerHTML = '';
-        recipeContainer.insertAdjacentHTML('afterbegin', markup);
+        _recipeViewJsDefault.default.render(_modelJs.state.recipe);
     } catch (err) {
         alert(err);
     }
 };
-showRecipe('https://forkify-api.herokuapp.com/api/get?rId=47746');
+//Events for recipe show
+[
+    'hashchange',
+    'load'
+].forEach((ev)=>window.addEventListener(ev, controlRecipes)
+);
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","url:../img/icons.svg":"5jwFy","core-js/stable":"95FYz","regenerator-runtime/runtime":"1EBPE"}],"ciiiV":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","core-js/stable":"95FYz","regenerator-runtime/runtime":"1EBPE","./model.js":"1pVJj","./views/recipeView.js":"82pEw"}],"ciiiV":[function(require,module,exports) {
 exports.interopDefault = function(a) {
     return a && a.__esModule ? a : {
         default: a
@@ -662,44 +591,6 @@ exports.export = function(dest, destName, get) {
         get: get
     });
 };
-
-},{}],"5jwFy":[function(require,module,exports) {
-module.exports = require('./helpers/bundle-url').getBundleURL('71ti3') + "icons.e7078503.svg" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"chiK4"}],"chiK4":[function(require,module,exports) {
-"use strict";
-var bundleURL = {
-};
-function getBundleURLCached(id) {
-    var value = bundleURL[id];
-    if (!value) {
-        value = getBundleURL();
-        bundleURL[id] = value;
-    }
-    return value;
-}
-function getBundleURL() {
-    try {
-        throw new Error();
-    } catch (err) {
-        var matches = ('' + err.stack).match(/(https?|file|ftp):\/\/[^)\n]+/g);
-        if (matches) // The first two stack frames will be this function and getBundleURLCached.
-        // Use the 3rd one, which will be a runtime in the original bundle.
-        return getBaseURL(matches[2]);
-    }
-    return '/';
-}
-function getBaseURL(url) {
-    return ('' + url).replace(/^((?:https?|file|ftp):\/\/.+)\/[^/]+$/, '$1') + '/';
-} // TODO: Replace uses with `new URL(url).origin` when ie11 is no longer supported.
-function getOrigin(url) {
-    var matches = ('' + url).match(/(https?|file|ftp):\/\/[^/]+/);
-    if (!matches) throw new Error('Origin not found');
-    return matches[0];
-}
-exports.getBundleURL = getBundleURLCached;
-exports.getBaseURL = getBaseURL;
-exports.getOrigin = getOrigin;
 
 },{}],"95FYz":[function(require,module,exports) {
 require('../modules/es.symbol');
@@ -15014,6 +14905,169 @@ try {
     if (typeof globalThis === "object") globalThis.regeneratorRuntime = runtime;
     else Function("r", "regeneratorRuntime = r")(runtime);
 }
+
+},{}],"1pVJj":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "state", ()=>state
+);
+parcelHelpers.export(exports, "loadRecipe", ()=>loadRecipe
+);
+var _regeneratorRuntime = require("regenerator-runtime");
+const state = {
+    recipe: {
+    }
+};
+const loadRecipe = async function(id) {
+    try {
+        //Loading recipe
+        const res = await fetch(`https://forkify-api.herokuapp.com/api/get?rId=${id}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(`${data.error}`);
+        const { recipe  } = data;
+        state.recipe = {
+            id: recipe.recipe_id,
+            title: recipe.title,
+            publisher: recipe.publisher,
+            sourceUrl: recipe.source_url,
+            image: recipe.image_url,
+            socialRank: recipe.social_rank,
+            publisherUrl: recipe.publisher_url,
+            ingredients: recipe.ingredients
+        };
+        console.log(state.recipe);
+    } catch (err) {
+        alert(err);
+    }
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","regenerator-runtime":"1EBPE"}],"82pEw":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+//SVG import
+var _iconsSvg = require("url:../../img/icons.svg");
+var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
+class RecipeView {
+    #parentElement = document.querySelector('.recipe');
+    #data;
+    render(data) {
+        this.#data = data;
+        const markup = this.#generateMarkup();
+        this.#clear();
+        this.#parentElement.insertAdjacentHTML('afterbegin', markup);
+    }
+     #clear() {
+        this.#parentElement.innerHTML = '';
+    }
+    //render spinner function
+    renderSpinner() {
+        const markup = `
+            <div class="spinner">
+                <svg>
+                <use href="${_iconsSvgDefault.default}#icon-loader"></use>
+                </svg>
+            </div>
+        `;
+        this.#parentElement.innerHTML = '';
+        this.#parentElement.insertAdjacentHTML('afterbegin', markup);
+    }
+     #generateMarkup() {
+        return `
+        <figure class="recipe__fig">
+          <img src="${this.#data.image}" alt="${this.#data.title}" class="recipe__img" />
+          <h1 class="recipe__title">
+            <span>${this.#data.title}</span>
+          </h1>
+        </figure>
+
+        <div class="recipe__details">
+          <div class="recipe__user-generated">
+            <svg>
+              <use href="${_iconsSvgDefault.default}#icon-user"></use>
+            </svg>
+          </div>
+          <button class="btn--round">
+            <svg class="">
+              <use href="${_iconsSvgDefault.default}#icon-bookmark-fill"></use>
+            </svg>
+          </button>
+        </div>
+
+        <div class="recipe__ingredients">
+          <h2 class="heading--2">Recipe ingredients</h2>
+          <ul class="recipe__ingredient-list">
+            ${this.#data.ingredients.map((ing)=>{
+            return `
+                <li class="recipe__ingredient">
+                    <div class="recipe__description">
+                        ${ing}
+                    </div>
+                </li> 
+                `;
+        }).join('')}
+          </ul>
+        </div>
+
+        <div class="recipe__directions">
+          <h2 class="heading--2">How to cook it</h2>
+          <p class="recipe__directions-text">
+            This recipe was carefully designed and tested by
+            <span class="recipe__publisher">${this.#data.publisher}</span>. Please check out
+            directions at their website.
+          </p>
+          <a
+            class="btn--small recipe__btn"
+            href="${this.#data.publisherUrl}"
+            target="_blank"
+          >
+            <span>Directions</span>
+            <svg class="search__icon">
+              <use href="${_iconsSvgDefault.default}#icon-arrow-right"></use>
+            </svg>
+          </a>
+        </div>
+        `;
+    }
+}
+exports.default = new RecipeView();
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","url:../../img/icons.svg":"5jwFy"}],"5jwFy":[function(require,module,exports) {
+module.exports = require('./helpers/bundle-url').getBundleURL('71ti3') + "icons.e7078503.svg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"chiK4"}],"chiK4":[function(require,module,exports) {
+"use strict";
+var bundleURL = {
+};
+function getBundleURLCached(id) {
+    var value = bundleURL[id];
+    if (!value) {
+        value = getBundleURL();
+        bundleURL[id] = value;
+    }
+    return value;
+}
+function getBundleURL() {
+    try {
+        throw new Error();
+    } catch (err) {
+        var matches = ('' + err.stack).match(/(https?|file|ftp):\/\/[^)\n]+/g);
+        if (matches) // The first two stack frames will be this function and getBundleURLCached.
+        // Use the 3rd one, which will be a runtime in the original bundle.
+        return getBaseURL(matches[2]);
+    }
+    return '/';
+}
+function getBaseURL(url) {
+    return ('' + url).replace(/^((?:https?|file|ftp):\/\/.+)\/[^/]+$/, '$1') + '/';
+} // TODO: Replace uses with `new URL(url).origin` when ie11 is no longer supported.
+function getOrigin(url) {
+    var matches = ('' + url).match(/(https?|file|ftp):\/\/[^/]+/);
+    if (!matches) throw new Error('Origin not found');
+    return matches[0];
+}
+exports.getBundleURL = getBundleURLCached;
+exports.getBaseURL = getBaseURL;
+exports.getOrigin = getOrigin;
 
 },{}]},["19Ls1","lA0Es"], "lA0Es", "parcelRequire3a11")
 
