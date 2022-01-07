@@ -3,13 +3,12 @@ import * as model from './model.js';
 import recipeView from './views/recipeView.js';
 import searchView from './views/searchView.js';
 import resultsView from './views/resultsView.js';
-import PaginationView from './views/paginationView.js';
+import bookmarksView from './views/bookmarkView.js';
 
 //Polyfill everything else except async
 import 'core-js/stable';
 //Polyfill async functions
 import 'regenerator-runtime/runtime';
-import { recip } from 'prelude-ls';
 import paginationView from './views/paginationView.js';
 
 //Script for parcel to restore state when reload
@@ -19,6 +18,7 @@ if(module.hot) {
 
 ///////////////////////////////////////
 
+//Handler for rendering recipes
 const controlRecipes = async function(){
     try{
         //Find the recipe id from url hash
@@ -30,6 +30,10 @@ const controlRecipes = async function(){
         //Render spinner when fetching load
         recipeView.renderSpinner();
 
+        //Update views
+        resultsView.update(model.getSearchResultsPage());
+        bookmarksView.update(model.state.bookmarks);
+
         //Load recipe. This is a async function that return promise so use await
         await model.loadRecipe(id);
 
@@ -40,6 +44,7 @@ const controlRecipes = async function(){
     }
 };
 
+//Handler for search results
 const controlSearchResults = async function() {
     try{
         //Load spinner when search starts
@@ -63,16 +68,39 @@ const controlSearchResults = async function() {
     }
 };
 
+//Handler for pagination
 const controlPagination = function(goToPage) {
     //Render results for the new page
     resultsView.render(model.getSearchResultsPage(goToPage));
     
     //Render new buttons for the new page
     paginationView.render(model.state.search);
-}
+};
+
+//Handler for bookmarks
+const controlAddBookmark = function() {
+    //If recipe is not bookmarked add to bookmarks
+    if(!model.state.recipe.bookmarked){
+        model.addBookmark(model.state.recipe);
+    } else {
+        //If recipe is in bookmarks remove it from there
+        model.deleteBookmark(model.state.recipe.id);
+    }
+    //Update recipe view
+    recipeView.update(model.state.recipe);
+
+    //Render bookamrks
+    bookmarksView.render(model.state.bookmarks);
+};
+
+const controlBookmarks = function() {
+    bookmarksView.render(model.state.bookmarks);
+};
 
 const init = function() {
+    bookmarksView.addHandlerRender(controlBookmarks);
     recipeView.addHandlerRender(controlRecipes);
+    recipeView.addHandlerAddBookmark(controlAddBookmark);
     searchView.addHandlerSearch(controlSearchResults);
     paginationView.addHandlerClick(controlPagination);
 };
