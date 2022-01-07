@@ -3,12 +3,14 @@ import * as model from './model.js';
 import recipeView from './views/recipeView.js';
 import searchView from './views/searchView.js';
 import resultsView from './views/resultsView.js';
+import PaginationView from './views/paginationView.js';
 
 //Polyfill everything else except async
 import 'core-js/stable';
 //Polyfill async functions
 import 'regenerator-runtime/runtime';
 import { recip } from 'prelude-ls';
+import paginationView from './views/paginationView.js';
 
 //Script for parcel to restore state when reload
 if(module.hot) {
@@ -51,16 +53,27 @@ const controlSearchResults = async function() {
         await model.loadSearchResults(query);
 
         //Render results
-        resultsView.render(model.state.search.results);
+        resultsView.render(model.getSearchResultsPage());
 
+        //Render pagination
+        paginationView.render(model.state.search);
     } catch(err) {
         resultsView.renderError(err);
         console.error(err);
     }
 };
 
+const controlPagination = function(goToPage) {
+    //Render results for the new page
+    resultsView.render(model.getSearchResultsPage(goToPage));
+    
+    //Render new buttons for the new page
+    paginationView.render(model.state.search);
+}
+
 const init = function() {
     recipeView.addHandlerRender(controlRecipes);
     searchView.addHandlerSearch(controlSearchResults);
+    paginationView.addHandlerClick(controlPagination);
 };
 init();
