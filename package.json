@@ -1,0 +1,29 @@
+{
+  "name": "forkify",
+  "version": "1.0.0",
+  "description": "Recipe application",
+  "default": "index.html",
+  "scripts": {
+    "start": "parcel index.html",
+    "build": "parcel build index.html --dist-dir ./dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://jessenaakka@github.com/jessenaakka/JavaScript-Forkify.git"
+  },
+  "author": "Jesse Naakka",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jessenaakka/JavaScript-Forkify/issues"
+  },
+  "homepage": "https://github.com/jessenaakka/JavaScript-Forkify#readme",
+  "devDependencies": {
+    "@parcel/transformer-sass": "^2.1.0",
+    "parcel": "^2.1.0",
+    "sass": "^1.26.10"
+  },
+  "dependencies": {
+    "core-js": "^3.20.2",
+    "regenerator-runtime": "^0.13.9"
+  }
+}
